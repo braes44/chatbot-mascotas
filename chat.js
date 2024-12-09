@@ -54,19 +54,27 @@ function appendMessage(message, sender) {
 
 // Función principal del chatbot
 async function getBotResponse(userInput) {
-  if (conversationStep === 1) {
-    const [especie, raza, ...infoExtra] = userInput.toLowerCase().split(' ');
+  const lowerInput = userInput.toLowerCase();
 
-    if (!petFirstAidDatabase[especie]) {
+  if (conversationStep === 1) {
+    // Buscar especie (perro o gato) y raza dentro del texto del usuario
+    const especie = ['perro', 'gato'].find(e => lowerInput.includes(e));
+    const raza = especie
+      ? Object.keys(petFirstAidDatabase[especie].razas).find(r =>
+          lowerInput.includes(r)
+        )
+      : null;
+
+    if (!especie) {
       return 'Actualmente, solo puedo proporcionar información sobre perros y gatos.';
     }
 
     userPetInfo.especie = especie;
-    userPetInfo.raza = raza;
-    userPetInfo.infoExtra = infoExtra.join(' ');
+    userPetInfo.raza = raza || 'desconocida';
+
     conversationStep = 2;
 
-    return `Gracias. Mencionaste: ${especie} de raza ${raza}. ¿Qué necesitas saber? Opciones: "primeros auxilios", "alimentos prohibidos", "medicamentos prohibidos" o "buscar veterinarias".`;
+    return `Gracias. Mencionaste: ${especie} de raza ${raza || 'desconocida'}. ¿Qué necesitas saber? Opciones: "primeros auxilios", "alimentos prohibidos", "medicamentos prohibidos" o "buscar veterinarias".`;
   }
 
   if (conversationStep === 2) {
@@ -74,7 +82,7 @@ async function getBotResponse(userInput) {
     const raza = userPetInfo.raza;
 
     if (/primeros auxilios/i.test(userInput)) {
-      const razaInfo = petFirstAidDatabase[especie].razas[raza];
+      const razaInfo = raza !== 'desconocida' ? petFirstAidDatabase[especie].razas[raza] : null;
       return razaInfo
         ? `Primeros auxilios para ${raza}: ${razaInfo}`
         : 'No tengo información específica sobre esta raza, pero puedo ayudarte con información general sobre tu especie.';
