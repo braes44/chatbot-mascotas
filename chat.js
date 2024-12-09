@@ -13,6 +13,7 @@ const petFirstAidDatabase = {
       labrador: 'Evita alimentos como chocolate, uvas o pasas. En caso de intoxicación, induce el vómito si ha pasado menos de 1 hora y consulta al veterinario.',
       chihuahua: 'Cuidado con golpes en la cabeza debido a su fragilidad. Mantén azúcar a mano en caso de hipoglucemia.',
     },
+    general: 'Los perros requieren atención rápida en caso de envenenamiento, heridas o asfixia. Mantén a mano el número de un veterinario.',
     alimentos_prohibidos: ['chocolate', 'uvas', 'pasas', 'cebolla', 'ajo', 'alcohol'],
     medicamentos_prohibidos: ['ibuprofeno', 'paracetamol humano'],
   },
@@ -21,6 +22,7 @@ const petFirstAidDatabase = {
       siames: 'Evita el contacto prolongado con químicos de limpieza. En caso de intoxicación, lava las patas y contacta al veterinario.',
       persa: 'Cuidado con infecciones respiratorias. Proporciónale un ambiente limpio y sin corrientes de aire.',
     },
+    general: 'Los gatos son sensibles a sustancias tóxicas. En caso de intoxicación, evita inducir el vómito sin consultar al veterinario.',
     alimentos_prohibidos: ['chocolate', 'cebolla', 'ajo', 'leche'],
     medicamentos_prohibidos: ['paracetamol humano', 'aspirina'],
   },
@@ -71,13 +73,11 @@ async function getBotResponse(userInput) {
     const razaDetectada = razas.find(r => lowerInput.includes(r));
 
     userPetInfo.especie = especieDetectada;
-    userPetInfo.raza = razaDetectada || 'desconocida';
+    userPetInfo.raza = razaDetectada || 'general';
 
     conversationStep = 2;
 
-    return `Gracias. Mencionaste: ${especieDetectada} de raza ${
-      razaDetectada || 'desconocida'
-    }. ¿Qué necesitas saber? Opciones: "primeros auxilios", "alimentos prohibidos", "medicamentos prohibidos" o "buscar veterinarias".`;
+    return `Gracias. Mencionaste: ${especieDetectada}${razaDetectada ? ` de raza ${razaDetectada}` : ''}. ¿Qué necesitas saber? Opciones: "primeros auxilios", "alimentos prohibidos", "medicamentos prohibidos" o "buscar veterinarias".`;
   }
 
   if (conversationStep === 2) {
@@ -85,10 +85,11 @@ async function getBotResponse(userInput) {
     const raza = userPetInfo.raza;
 
     if (/primeros auxilios/i.test(userInput)) {
-      const razaInfo = raza !== 'desconocida' ? petFirstAidDatabase[especie].razas[raza] : null;
+      const razaInfo =
+        raza !== 'general' ? petFirstAidDatabase[especie].razas[raza] : null;
       return razaInfo
         ? `Primeros auxilios para ${raza}: ${razaInfo}`
-        : 'No tengo información específica sobre esta raza, pero puedo ayudarte con información general sobre tu especie.';
+        : petFirstAidDatabase[especie].general;
     }
 
     if (/alimentos prohibidos/i.test(userInput)) {
