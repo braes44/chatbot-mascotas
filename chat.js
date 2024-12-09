@@ -57,27 +57,24 @@ async function getBotResponse(userInput) {
   const lowerInput = userInput.toLowerCase();
 
   if (conversationStep === 1) {
-    // Detectar especie y raza basándose en palabras clave
-    const especies = ['perro', 'gato'];
-    const especieDetectada = especies.find(e => lowerInput.includes(e));
+    // Buscar especie (perro o gato) y raza dentro del texto del usuario
+    const especie = ['perro', 'gato'].find(e => lowerInput.includes(e));
+    const raza = especie
+      ? Object.keys(petFirstAidDatabase[especie].razas).find(r =>
+          lowerInput.includes(r)
+        )
+      : null;
 
-    if (!especieDetectada) {
+    if (!especie) {
       return 'Actualmente, solo puedo proporcionar información sobre perros y gatos.';
     }
 
-    const razas = especieDetectada
-      ? Object.keys(petFirstAidDatabase[especieDetectada].razas)
-      : [];
-    const razaDetectada = razas.find(r => lowerInput.includes(r));
-
-    userPetInfo.especie = especieDetectada;
-    userPetInfo.raza = razaDetectada || 'desconocida';
+    userPetInfo.especie = especie;
+    userPetInfo.raza = raza || 'desconocida';
 
     conversationStep = 2;
 
-    return `Gracias. Mencionaste: ${especieDetectada} de raza ${
-      razaDetectada || 'desconocida'
-    }. ¿Qué necesitas saber? Opciones: "primeros auxilios", "alimentos prohibidos", "medicamentos prohibidos" o "buscar veterinarias".`;
+    return `Gracias. Mencionaste: ${especie} de raza ${raza || 'desconocida'}. ¿Qué necesitas saber? Opciones: "primeros auxilios", "alimentos prohibidos", "medicamentos prohibidos" o "buscar veterinarias".`;
   }
 
   if (conversationStep === 2) {
